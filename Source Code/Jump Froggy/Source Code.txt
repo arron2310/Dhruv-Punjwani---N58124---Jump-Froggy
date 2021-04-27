@@ -1,0 +1,238 @@
+/*Program Start*/
+/* Main Class - Frogger */
+Frog frog;
+Car[] cars;
+Log[] logs;
+
+float grid = 50;
+
+void resetGame(){
+  frog = new Frog(width/2-grid/2, height-grid, grid);
+  frog.attach(null);
+}
+
+
+void setup() {
+  size(640, 480);
+  cars = new Car[8];
+//  frog = new Frog(width/2-grid/2, height-grid, grid);
+  resetGame();
+  
+  
+  int index = 0;
+  //ROW 1 (Inverted Row Structure)
+  for (int i = 0; i < 2; i++) {
+     float x = i * 300;
+     cars[index] = new Car(x, height-grid*2,grid*2,grid, 2);
+     index++;
+  }
+  
+    //ROW 2
+  for (int i = 0; i < 2; i++) {
+     float x = i * 200 + 150;
+     cars[index] = new Car(x, height-grid*3,grid,grid, -3.5);
+     index++;
+  }
+  
+      //ROW 3
+  for (int i = 0; i < 4; i++) {
+     float x = i * 150 + 25;
+     cars[index] = new Car(x, height-grid*4,grid,grid, 1);
+     index++;
+  }
+  
+  //ROW 4 is the SAFETY LANE
+  
+  logs = new Log[7];
+  
+       //ROW 5
+  index = 0;
+  for (int i = 0; i < 2; i++) {
+     float x = i * 250 + 100;
+     logs[index] = new Log(x, height-grid*6,grid*3,grid, 2.3);
+     index++;
+  }
+  
+       //ROW 6
+  for (int i = 0; i < 3; i++) {
+     float x = i * 200 + 30;
+     logs[index] = new Log(x, height-grid*7,grid*2,grid, -1.3);
+     index++;
+  }
+  
+       //ROW 7
+  for (int i = 0; i < 2; i++) {
+     float x = i * 400 + 10;
+     logs[index] = new Log(x, height-grid*8,grid*4,grid, 0.5);
+     index++;
+  }
+
+}
+
+void draw() {
+  background(0);
+  fill(215, 100);
+  rect(0, 0,width,grid*2);
+  rect(0,height-grid,width,grid);
+  rect(0,height-grid*5,width,grid);
+  //frog.show();
+  for (Car car : cars) {
+      car.show();
+      car.update();
+      if (frog.intersects(car)) {
+        resetGame();
+        
+        //println("GAME OVER");
+      
+      }
+  }
+  
+  for (Log log : logs) {
+      log.show();
+      log.update();
+  }
+  
+        if ( frog.y < height-grid*5 && frog.y > grid*2) {
+           boolean ok = false;
+           for (Log log : logs) {
+        if (frog.intersects(log)) {
+          ok = true;
+          frog.attach(log);
+          }
+        }
+        if (!ok) {
+          resetGame();        
+        }
+      } else {
+        frog.attach(null);
+      
+      }
+      
+      frog.update();
+      frog.show();
+    }
+  
+    
+
+void keyPressed() {
+  
+  if (keyCode == UP) {
+    frog.move(0,-1);
+  } else if (keyCode == DOWN) {
+    frog.move(0,1);  
+  } else if (keyCode == RIGHT) {
+    frog.move(1,0);
+  } else if (keyCode == LEFT) {
+    frog.move(-1,0);
+  }
+}
+
+/*End of Frogger*/
+/***************************************************************************/
+/*Class - Car*/
+class Car extends Rectangle {
+   float speed;
+   
+   
+   Car(float x, float y, float w, float h, float s) {
+      super(x,y,w,h);   
+      speed = s;
+   }
+   
+   void update() {
+     x = x+ speed;
+     
+     if (speed > 0 && x > width+grid) {
+       x = -w-grid;
+     } else if (speed < 0 && x < -w-grid) {
+     x = width +grid;
+     }
+      
+   }
+
+   void show() {
+      fill (200);
+      rect(x, y, w, h);
+  
+  }
+
+}
+/*End of Car*/
+/*********************************************************************/
+/*Class - Frog*/
+class Frog extends Rectangle{
+
+   Log attached = null;
+   Frog(float x, float y, float w) {
+      super(x,y,w,w);   
+   }
+   
+  void show() {
+    fill (0, 255, 0, 200);
+    rect(x, y, w, w);
+  }
+  
+  void attach(Log log) {
+    attached = log;
+  }
+  
+  void update() {
+    if (attached != null) {
+      frog.x += attached.speed;
+    }
+    
+    frog.x = constrain(x,0, width -w);
+  }
+  
+  
+  void move(float xdir, float ydir) {
+    x += xdir * grid;
+    y += ydir * grid;
+  }
+}
+/*End of Frog*/
+/*****************************************************************************/
+/*Class - Log*/
+class Log extends Car {
+      
+    Log(float x, float y, float w, float h, float s) {
+      super(x,y,w,h, s);   
+    }
+
+}
+/*End of Log*/
+/*****************************************************************************/
+/*Class - Rectangle*/
+class Rectangle {
+  float x;
+  float y;
+  float w;
+  float h;
+  
+  Rectangle(float x, float y, float w, float h) {
+    this.x = x;
+    this.w = w;
+    this.y = y;
+    this.h = h;  
+  }
+  
+  boolean intersects (Rectangle other) {
+    float left = x;
+    float right = x + w;
+    float top = y;
+    float bottom = y + h;
+    
+    float oleft = other.x;
+    float oright = other.x + other.w;
+    float otop = other.y;
+    float obottom = other.y + other.h;
+    
+    return !(left >= oright ||
+      right <= oleft ||
+      top >= obottom ||
+      bottom <= otop);
+  }
+}
+/*End of Rectangle*/
+/****************************************************************************/
+/*End of Program*/
